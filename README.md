@@ -1,7 +1,12 @@
 
 # Jupyter Show Image
 
-Display images in jupyter web UI
+Display images in jupyter web UI.
+
+Encodes the image directly into HTML (base64) without going through matplotlib. 
+
+The compression format is customizable. A single function call can show multiple images in a grid.
+
 * `show(img_1, img_2)` will draw each image on a separate row
 * `show([img_1, img_2])` will draw both images in one row
 * `show([img_1, img_2], [img_3, img_4])` will draw two rows of two images
