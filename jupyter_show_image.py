@@ -30,7 +30,8 @@ from IPython.display import display_html
 ### Image IO
 
 def imread(path):
-	return np.asarray(PIL_Image.open(path))
+	with PIL_Image.open(path) as file_handle:
+		return np.asarray(file_handle)
 
 IMWRITE_OPTS = dict(
 	webp = dict(quality = 85),
@@ -101,7 +102,7 @@ class ImageHTML:
 	"""
 	CONTENT_TMPL = """<div style="width:100%;"><img src="data:image/{fmt};base64,{data}" /></div>"""
 	
-	def __init__(self, image_data, fmt='webp', adapt=True):
+	def __init__(self, image_data, fmt='png', adapt=True):
 		self.fmt = fmt
 		image_data = adapt_img_data(image_data) if adapt else image_data
 		self.data_base64 = self.encode_image(image_data, fmt)
@@ -130,7 +131,7 @@ class ImageGridHTML:
 	ROW_START = """<div style="display:flex; justify-content: space-evenly;">"""
 	ROW_END = """</div>"""
 	
-	def __init__(self, *rows, fmt='webp', adapt=True):
+	def __init__(self, *rows, fmt='png', adapt=True):
 		"""
 		`show(img_1, img_2)` will draw each image on a separate row
 		`show([img_1, img_2])` will draw both images in one row
