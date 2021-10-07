@@ -30,8 +30,8 @@ from IPython.display import display_html
 ### Image IO
 
 def imread(path):
-	with PIL_Image.open(path) as file_handle:
-		return np.asarray(file_handle)
+	with PIL_Image.open(path) as pil_handle:
+		return np.asarray(pil_handle)
 
 IMWRITE_OPTS = dict(
 	webp = dict(quality = 85),
@@ -96,14 +96,25 @@ def adapt_img_data(img_data, cmap_pos=cm.get_cmap('magma'), cmap_div=cm.get_cmap
 	return img_data 
 
 
+def resolve_image_format(fmt_name):
+	fmt_name = fmt_name.lower()
+
+	# PIL wants jpeg not jpg
+	if fmt_name == 'jpg':
+		fmt_name = 'jpeg'
+
+	return fmt_name
+
+
 class ImageHTML:
 	"""
 	Represents an image as a HTML <img> with the data encoded as base64
 	"""
 	CONTENT_TMPL = """<div style="width:100%;"><img src="data:image/{fmt};base64,{data}" /></div>"""
-	
-	def __init__(self, image_data, fmt='png', adapt=True):
-		self.fmt = fmt
+	DEFAULT_IMAGE_FMT = "png"
+
+	def __init__(self, image_data, fmt=None, adapt=True):
+		self.fmt = resolve_image_format(fmt or self.DEFAULT_IMAGE_FMT)
 		image_data = adapt_img_data(image_data) if adapt else image_data
 		self.data_base64 = self.encode_image(image_data, fmt)
 		
@@ -130,8 +141,9 @@ class ImageGridHTML:
 
 	ROW_START = """<div style="display:flex; justify-content: space-evenly;">"""
 	ROW_END = """</div>"""
+	DEFAULT_IMAGE_FMT = "png"
 	
-	def __init__(self, *rows, fmt='png', adapt=True):
+	def __init__(self, *rows, fmt=None, adapt=True):
 		"""
 		`show(img_1, img_2)` will draw each image on a separate row
 		`show([img_1, img_2])` will draw both images in one row
@@ -140,7 +152,7 @@ class ImageGridHTML:
 		@param fmt: image format, usually png jpeg webp
 		@param adapt: whether to try converting unusual shapes and datatypes to the needed RGB
 		"""
-		self.fmt = fmt
+		self.fmt = resolve_image_format(fmt or self.DEFAULT_IMAGE_FMT)
 		self.adapt = adapt
 		self.rows = [self.encode_row(r) for r in rows]
 		
@@ -177,4 +189,12 @@ class ImageGridHTML:
 		"""
 		ImageGridHTML(*images, **options).show()
 
+
+def show_set_default_image_format(new_fmt : str):
+	ImageGridHTML.DEFAULT_IMAGE_FMT = new_fmt
+	ImageHTML.DEFAULT_IMAGE_FMT = new_fmt
+
+
 show = ImageGridHTML.show_image
+show.set_default_image_format = show_set_default_image_format
+
